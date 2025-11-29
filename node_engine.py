@@ -30,15 +30,16 @@ from typing import Dict, Any
 dotenv.load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
-MODEL = "gpt-4o"
+MODEL = os.getenv("MODEL")
 OUTPUT_DIR = "data_output"
+TEMPERATURE=1
 
 ##add in function for translating the xnli dataset
 
 
 def RunDataTranslationAgent(state: AgentRunningState):
     DataTranslationAgent = DATA_TRANSLATION_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.7, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(TranslationResponse)
     response = DataTranslationAgent.invoke(state)
     retry = 4
@@ -52,7 +53,7 @@ def RunDataTranslationAgent(state: AgentRunningState):
 
 def RunAccuracyAgent(state: AgentRunningState):
     AccuracyAgent = ACCURACY_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(AccuracyResponse)
     response = AccuracyAgent.invoke(state)
 
@@ -61,7 +62,7 @@ def RunAccuracyAgent(state: AgentRunningState):
 
 def RunFluencyAgent(state: AgentRunningState):
     FluencyAgent = FLUENCY_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(FluencyResponse)
     response = FluencyAgent.invoke(state)
 
@@ -70,7 +71,7 @@ def RunFluencyAgent(state: AgentRunningState):
 
 def RunNaturalnessAgent(state: AgentRunningState):
     NaturalnessAgent = NATURALNESS_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(NaturalnessResponse)
     response = NaturalnessAgent.invoke(state)
 
@@ -79,7 +80,7 @@ def RunNaturalnessAgent(state: AgentRunningState):
 
 def RunCSRatioAgent(state: AgentRunningState):
     CSRatioAgent = CS_RATIO_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(CSRatioResponse)
     response = CSRatioAgent.invoke(state)
 
@@ -88,7 +89,7 @@ def RunCSRatioAgent(state: AgentRunningState):
 
 def RunSocialCulturalAgent(state: AgentRunningState):
     SocialCulturalAgent = SOCIAL_CULTURAL_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(SocialCulturalResponse)
     response = SocialCulturalAgent.invoke(state)
     return {"social_cultural_result": response}
@@ -110,11 +111,10 @@ def SummarizeResult(state: AgentRunningState):
 
 
 def AcceptanceAgent(state: AgentRunningState):
-    language = state["first_language"]
-    with jsonlines.open(
-        f"{OUTPUT_DIR}/{language}.jsonl",
-        "a",
-    ) as f:
+    language = state["second_language"]
+    os.makedirs(OUTPUT_DIR, exist_ok=True) 
+
+    with jsonlines.open(f"{OUTPUT_DIR}/{language}.jsonl", "a") as f:
         f.write(state)
     return
 
@@ -122,22 +122,22 @@ def AcceptanceAgent(state: AgentRunningState):
 def RunRefinerAgent(state: AgentRunningState):
 
     RefinerAgent = REFINER_PROMPT | ChatOpenAI(
-        model=MODEL, temperature=0.1, api_key=API_KEY
+        model=MODEL, temperature=TEMPERATURE, api_key=API_KEY
     ).with_structured_output(TranslationResponse)
     response = RefinerAgent.invoke(state)
 
-    return {"refiner_result": response, "refine_count": 3}
+    return {"refiner_result": response, "refine_count": 1}
 
-def RunMCPAgent(state: AgentRunningState) -> Dict[str, Any]:
-    """
-    Iterate through all MCP tools in the registry, execute them in order, and merge the results.
-    The execution result -> state["mcp_result"], used by the subsequent nodes.
-    """
-    result: Dict[str, Any] = {}
-    for tool_name, tool in get_all_tools().items():
-        try:
-            result.update(tool.run(state))
-        except Exception as e:
-            # Ensure that a tool failure does not affect the subsequent nodes
-            result[tool_name] = f"ERROR: {e}"
-    return {"mcp_result": result}
+# def RunMCPAgent(state: AgentRunningState) -> Dict[str, Any]:
+#     """
+#     Iterate through all MCP tools in the registry, execute them in order, and merge the results.
+#     The execution result -> state["mcp_result"], used by the subsequent nodes.
+#     """
+#     result: Dict[str, Any] = {}
+#     for tool_name, tool in get_all_tools().items():
+#         try:
+#             result.update(tool.run(state))
+#         except Exception as e:
+#             # Ensure that a tool failure does not affect the subsequent nodes
+#             result[tool_name] = f"ERROR: {e}"
+#     return {"mcp_result": result}

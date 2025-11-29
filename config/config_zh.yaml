@@ -4,8 +4,8 @@ pre_execute:
     - "50%"
     - "30%"
   use_tools: true
-  first_language: "Mandarin"
-  second_language: "English"
+  first_language: "English"
+  second_language: "Mandarin"
   output_format:
     "json"
     

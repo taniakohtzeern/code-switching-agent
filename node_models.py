@@ -33,6 +33,7 @@ class SocialCulturalResponse(TypedDict):
     summary: str
 
 class AgentRunningState(TypedDict):
+    hypothesis:str
     cs_ratio: str
     first_language: str
     second_language: str
