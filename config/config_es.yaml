@@ -1,0 +1,16 @@
+pre_execute:
+  cs_ratio:
+    - "70%"
+    - "50%"
+    - "30%"
+  use_tools: true
+  first_language: "Mandarin"
+  second_language: "English"
+  output_format:
+    "json"
+    
+  
+
+on_execute:
+  round: 1
+  verbose: true
