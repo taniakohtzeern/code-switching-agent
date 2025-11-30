@@ -207,7 +207,7 @@ REFINER_PROMPT = ChatPromptTemplate.from_messages(
             maintaining the main purpose of producing a code-switched text:
             
             1. **Accuracy**:
-            - Check for semantic errors between the original and code-switched text.
+            - Check for semantic errors between the original and code-switched text. Prioritise accuracy above all.
 
             2. **Fluency**:
             - Check for grammatical errors or unnatural mixing of word orders between the matrix and embedded languages.

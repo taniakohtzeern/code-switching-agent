@@ -114,18 +114,30 @@ def SummarizeResult(state: AgentRunningState):
 
     return {"score": weighting_scheme(state), "summary": summary}
 
-
 def AcceptanceAgent(state: AgentRunningState):
     language = state["second_language"]
-    os.makedirs(OUTPUT_DIR, exist_ok=True) 
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
     jsonl_file = f"{OUTPUT_DIR}/{language}.jsonl"
+    json_dataset_file = f"{OUTPUT_DIR}/{language}_dataset.json"
     tsv_file = f"{OUTPUT_DIR}/cs_{language}_test.tsv"
+
+    # Extract hypothesis text (STRING)
+    hypo_text = state.get("hypothesis", {}).get("hypo", "")
+    translated_sentence = state["data_translation_result"]["translated_sentence"]
+
+    if os.path.exists(json_dataset_file):
+        with jsonlines.open(json_dataset_file, "r") as f:
+            existing_translations = list(f)
     with jsonlines.open(jsonl_file, "a") as f:
         f.write(state)
-    with jsonlines.open(f"{OUTPUT_DIR}/{language}_dataset.json", "a") as f:
-        f.write(state["data_translation_result"]["translated_sentence"])
-    save_jsonl_to_tsv(jsonl_file, tsv_file, loader)    
-    return
+
+    with jsonlines.open(json_dataset_file, "a") as f:
+        f.write(translated_sentence)
+
+    # ---------- Regenerate TSV ----------
+    save_jsonl_to_tsv(jsonl_file, tsv_file, loader)
+
 
 
 def RunRefinerAgent(state: AgentRunningState):
