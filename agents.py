@@ -21,12 +21,12 @@ from datetime import datetime
 
 
 #agents are adapted from switchlingua
-code_switch_lang='mly'
+code_switch_lang='vi'
 logger.add(f"logs/code_switching_agent_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
 config: dict = load_config(f"./config/config_{code_switch_lang}.yaml")
 MAX_REFINER_ITERATIONS = 1
-start=305
-end=306
+start=1200
+end=1240
 
 
 def meet_criteria(state: AgentRunningState):
@@ -90,6 +90,7 @@ class CodeSwitchingAgent:
 
 async def arun(hypo):
     agent_instance = CodeSwitchingAgent(hypo)
+    print(f"🔍 Running scenario: {hypo}")
     await agent_instance.run()
 
 
